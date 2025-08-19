@@ -41,7 +41,7 @@ async def health_check():
     return {"message": "API is healthy"}
 
 
-@app.post("/tasks/", response_model=schemas.TaskResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/create-task/", response_model=schemas.TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     """Crear una nueva tarea"""
     try:
