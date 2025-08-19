@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# DEBUG: Mostrar todas las variables de entorno que empiecen con MYSQL
+# DEBUG: Mostrar todas las variables de entorno
 print("=== DEBUG: Variables de entorno disponibles ===")
 mysql_vars = {k: v for k, v in os.environ.items() if 'MYSQL' in k or 'DATABASE' in k or 'RAILWAY' in k}
 for key, value in mysql_vars.items():
@@ -22,7 +22,16 @@ if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("MYSQL_URL"):
 
     # Validar que la variable existe
     if not DATABASE_URL:
-        raise ValueError("Missing DATABASE_URL variable in Railway")
+        raise ValueError("Missing MYSQL_URL variable in Railway")
+
+    # Asegurarse de usar el driver pymysql
+    if "mysql://" in DATABASE_URL and not "mysql+pymysql://" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://")
+    elif "mysql+pymysql://" in DATABASE_URL:
+        pass  # La URL ya tiene el driver correcto
+    else:
+        # En caso de que la URL no empiece con mysql://
+        raise ValueError("MYSQL_URL has an unexpected format.")
 
     print(f"Railway DB Config: {DATABASE_URL}")
 
@@ -30,7 +39,7 @@ if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("MYSQL_URL"):
     engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=300)
 
 else:
-    # Desarrollo local - Mantén tu lógica local
+    # Desarrollo local
     print("Detectado entorno local")
     MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
     MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
