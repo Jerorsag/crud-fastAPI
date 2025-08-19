@@ -14,11 +14,11 @@ for key, value in mysql_vars.items():
 print("=" * 50)
 
 # Detectar si estamos en Railway
-if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("DATABASE_URL"):
+if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("MYSQL_URL"):
     print("Detectado entorno Railway")
 
     # Leer la URL de la base de datos de la variable que creaste
-    DATABASE_URL = os.getenv("DATABASE_URL")
+    DATABASE_URL = os.getenv("MYSQL_URL")
 
     # Validar que la variable existe
     if not DATABASE_URL:
