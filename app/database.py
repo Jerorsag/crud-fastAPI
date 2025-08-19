@@ -13,42 +13,24 @@ for key, value in mysql_vars.items():
     print(f"{key}: {value}")
 print("=" * 50)
 
-# Detectar si estamos en Railway o local
-if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("MYSQLHOST"):
-    # Producción en Railway - MySQL automático
+# Detectar si estamos en Railway
+if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("DATABASE_URL"):
     print("Detectado entorno Railway")
 
-    # Railway usa estos nombres exactos
-    MYSQL_HOST = os.getenv("MYSQLHOST")
-    MYSQL_PORT = os.getenv("MYSQLPORT") or "3306"  # Fallback si es None
-    MYSQL_USER = os.getenv("MYSQLUSER")
-    MYSQL_PASSWORD = os.getenv("MYSQLPASSWORD")
-    MYSQL_DB = os.getenv("MYSQLDATABASE")
+    # Leer la URL de la base de datos de la variable que creaste
+    DATABASE_URL = os.getenv("DATABASE_URL")
 
-    print(f"MYSQL_HOST: {MYSQL_HOST}")
-    print(f"MYSQL_PORT: {MYSQL_PORT}")
-    print(f"MYSQL_USER: {MYSQL_USER}")
-    print(f"MYSQL_PASSWORD: {'***' if MYSQL_PASSWORD else None}")
-    print(f"MYSQL_DB: {MYSQL_DB}")
+    # Validar que la variable existe
+    if not DATABASE_URL:
+        raise ValueError("Missing DATABASE_URL variable in Railway")
 
-    # Validar que todas las variables existen
-    if not all([MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB]):
-        print("ERROR: Faltan variables de MySQL en Railway")
-        print("¿Agregaste el servicio MySQL en Railway?")
-        raise ValueError(f"Missing MySQL variables: HOST={MYSQL_HOST}, USER={MYSQL_USER}, DB={MYSQL_DB}")
+    print(f"Railway DB Config: {DATABASE_URL}")
 
-    # Asegurarse que el puerto es un número válido
-    try:
-        MYSQL_PORT = int(MYSQL_PORT)
-    except (ValueError, TypeError):
-        MYSQL_PORT = 3306
-
-    print(f"Railway DB Config: {MYSQL_USER}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}")
-
-    DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+    # Crear el motor de la base de datos
     engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=300)
+
 else:
-    # Desarrollo local - MySQL
+    # Desarrollo local - Mantén tu lógica local
     print("Detectado entorno local")
     MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
     MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
